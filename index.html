@@ -8,7 +8,7 @@
 <style>
 body {
     margin: 0;
-    font-family: sans-serif;
+    font-family: 'Poppins', sans-serif;
     background: linear-gradient(135deg,#0f172a,#020617);
     color: white;
 }
@@ -32,8 +32,8 @@ body {
 }
 .message {
     margin: 10px;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 12px;
     max-width: 80%;
     white-space: pre-line;
 }
@@ -51,10 +51,16 @@ body {
 input {
     flex: 1;
     padding: 10px;
+    border-radius: 10px;
+    border: none;
 }
 button {
     margin-left: 5px;
     padding: 10px;
+    border-radius: 10px;
+    border: none;
+    background: #9333ea;
+    color: white;
 }
 </style>
 </head>
@@ -66,66 +72,59 @@ button {
     <div class="chat-box" id="chat"></div>
 
     <div class="input-area">
-        <input id="input" placeholder="Type here...">
+        <input id="input" placeholder="Type or speak...">
         <button onclick="sendMessage()">Send</button>
         <button onclick="startVoice()">🎤</button>
     </div>
 </div>
 
 <script>
-let knowledge = "";
 
-// 📥 LOAD .txt FILE
-async function loadKnowledge() {
-    try {
-        const res = await fetch("Shikhartraders.txt");
-        knowledge = await res.text();
-        console.log("Knowledge loaded ✅");
-    } catch (e) {
-        console.error("Failed to load knowledge file ❌");
-    }
+// 🧠 LANGUAGE DETECTION
+function isHindi(msg){
+    return /kya|hai|chahiye|kitna|price|batao|hai\?/i.test(msg);
 }
 
-loadKnowledge();
-
-// 🧠 SMART RULE ENGINE
-function getReply(msg) {
-    msg = msg.toLowerCase();
-
-    // Language detection
-    let isHindi = /kya|hai|chahiye|price|kitna/.test(msg);
+// 💬 MAIN AI LOGIC
+function getReply(msg){
+    let m = msg.toLowerCase();
+    let hindi = isHindi(msg);
 
     // ❌ Other brands
-    if (msg.includes("acc") || msg.includes("ambuja") || msg.includes("other")) {
-        return isHindi
-        ? "Hum sirf UltraTech products hi sell karte hain ✅"
+    if(m.includes("acc") || m.includes("ambuja") || m.includes("other")){
+        return hindi
+        ? "Nahi, hum sirf UltraTech products hi sell karte hain ✅"
         : "We sell only UltraTech products ✅";
     }
 
-    // Cement
-    if (msg.includes("cement")) {
-        return isHindi
-        ? `Cement available hai ✅
+    // 🧱 Cement
+    if(m.includes("cement")){
+        return hindi
+        ? `Bilkul! Cement available hai ✅
 
-• Price: ₹415 – ₹420 approx
+• UltraTech Paper: ₹415
+• Weather Plus: ₹420
+• Super Cement: ₹415
 • Delivery: Minimum 30 bags
 
-Prices approx hain ✅ Exact price ke liye WhatsApp karein.
+Prices approx hain ✅ Accurate price ke liye WhatsApp karein.
 
-Kitne bags chahiye?`
+Aapko kitne bags chahiye?`
         : `Cement is available ✅
 
-• Price: ₹415 – ₹420 approx
+• Paper: ₹415
+• Weather Plus: ₹420
+• Super: ₹415
 • Delivery: Minimum 30 bags
 
-Prices are approx. Check WhatsApp for exact rate.
+Prices are approx. Check WhatsApp for exact price.
 
 How many bags do you need?`;
     }
 
-    // Waterproofing
-    if (msg.includes("water") || msg.includes("proof")) {
-        return isHindi
+    // 💧 Waterproofing
+    if(m.includes("water") || m.includes("proof")){
+        return hindi
         ? `Waterproofing available hai ✅
 
 • 1L: ₹175
@@ -135,7 +134,7 @@ How many bags do you need?`;
 
 Stock website par depend karta hai.
 
-Kaunsa pack chahiye?`
+Kaunsa pack size chahiye?`
         : `Waterproofing available ✅
 
 • 1L: ₹175
@@ -148,13 +147,13 @@ Stock depends on website.
 Which size do you need?`;
     }
 
-    // Rings
-    if (msg.includes("ring")) {
-        return isHindi
+    // ⭕ Rings
+    if(m.includes("ring")){
+        return hindi
         ? `Rings available hain ✅
 
 • ₹12 per piece
-• Minimum 1000 pcs
+• Minimum 1000 pieces
 
 Kitni quantity chahiye?`
         : `Rings available ✅
@@ -165,9 +164,9 @@ Kitni quantity chahiye?`
 How many pieces do you need?`;
     }
 
-    // Cover blocks
-    if (msg.includes("cover")) {
-        return isHindi
+    // 🧱 Cover Blocks
+    if(m.includes("cover")){
+        return hindi
         ? `Cover blocks available hain ✅
 
 • ₹300 per bag (300 pcs)
@@ -180,20 +179,37 @@ Kitne bags chahiye?`
 How many bags do you need?`;
     }
 
-    // Order
-    if (msg.includes("order") || msg.includes("buy")) {
-        return isHindi
+    // 🚚 Delivery
+    if(m.includes("delivery")){
+        return hindi
+        ? `Haan delivery available hai ✅
+
+• Cement delivery: minimum 30 bags
+
+Aapka location kya hai?`
+        : `Yes delivery is available ✅
+
+• Cement delivery: minimum 30 bags
+
+What is your location?`;
+    }
+
+    // 📞 Order
+    if(m.includes("order") || m.includes("buy")){
+        return hindi
         ? `Order call par accept nahi hota ❌
 
 WhatsApp par message karein:
 
 Hi Shikhar Trader’s,
-Mujhe UltraTech ___ chahiye.
+Mujhe UltraTech ___ chahiye
 Quantity: ___
-Location: ___`
+Location: ___
+
+Main aapko help kar dunga ✅`
         : `Orders are not accepted on call ❌
 
-Please send this on WhatsApp:
+Send this on WhatsApp:
 
 Hi Shikhar Trader’s,
 I need UltraTech ___
@@ -201,71 +217,81 @@ Quantity: ___
 Location: ___`;
     }
 
-    // Default
-    return isHindi
-    ? `Namaste 🙏
+    // 💰 Price
+    if(m.includes("price")){
+        return hindi
+        ? `Prices approx hain ✅
 
-Main aapki help kar sakta hoon:
+Accurate updated price ke liye WhatsApp par "Hi Shikhar Trader’s" bhejein ya website check karein.`
+        : `Prices are approximate ✅
+
+For exact price, contact on WhatsApp or check website.`;
+    }
+
+    // 👋 Greeting
+    return hindi
+    ? `Namaste 🙏 Welcome to Shikhar Trader’s!
+
+Main aapki requirement ke hisaab se best UltraTech solution suggest karunga ✅
+
+Aapko kya chahiye?
 • Cement
 • Waterproofing
-• Rings
 • Cover Blocks
+• Rings`
+    : `Welcome to Shikhar Trader’s 👋
 
-Aapko kya chahiye?`
-    : `Welcome 👋
+I will help you choose the best UltraTech product ✅
 
-I can help you with:
+What do you need?
 • Cement
 • Waterproofing
-• Rings
 • Cover Blocks
-
-What do you need?`;
+• Rings`;
 }
 
-// 💬 SEND MESSAGE
-function sendMessage() {
+// 💬 SEND
+function sendMessage(){
     let input = document.getElementById("input");
     let text = input.value.trim();
-    if (!text) return;
+    if(!text) return;
 
-    addMessage(text, "user");
-    input.value = "";
+    addMessage(text,"user");
+    input.value="";
 
     let reply = getReply(text);
-    addMessage(reply, "bot");
+    addMessage(reply,"bot");
     speak(reply);
 }
 
 // 🧾 UI
-function addMessage(text, type) {
-    let chat = document.getElementById("chat");
-    let div = document.createElement("div");
-    div.className = "message " + type;
-    div.innerText = text;
+function addMessage(text,type){
+    let chat=document.getElementById("chat");
+    let div=document.createElement("div");
+    div.className="message "+type;
+    div.innerText=text;
     chat.appendChild(div);
-    chat.scrollTop = chat.scrollHeight;
+    chat.scrollTop=chat.scrollHeight;
 }
 
 // 🎤 Voice
-function startVoice() {
-    let recognition = new webkitSpeechRecognition();
-    recognition.lang = "en-IN";
-    recognition.start();
-
-    recognition.onresult = function(event) {
-        document.getElementById("input").value =
-            event.results[0][0].transcript;
+function startVoice(){
+    let r=new webkitSpeechRecognition();
+    r.lang="en-IN";
+    r.start();
+    r.onresult=e=>{
+        document.getElementById("input").value=e.results[0][0].transcript;
         sendMessage();
-    };
+    }
 }
 
-// 🔊 Voice output
-function speak(text) {
-    let speech = new SpeechSynthesisUtterance(text);
-    speech.lang = "hi-IN";
-    speechSynthesis.speak(speech);
+// 🔊 Speak
+function speak(text){
+    let s=new SpeechSynthesisUtterance(text);
+    s.lang="hi-IN";
+    speechSynthesis.speak(s);
 }
+
 </script>
 
 </body>
