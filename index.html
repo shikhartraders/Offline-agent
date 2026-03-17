@@ -13,7 +13,7 @@ body {
     color: white;
 }
 .chat-container {
-    max-width: 500px;
+    max-width: 520px;
     margin: auto;
     height: 100vh;
     display: flex;
@@ -24,6 +24,7 @@ body {
     background: linear-gradient(45deg,#2563eb,#9333ea);
     text-align: center;
     font-weight: bold;
+    font-size: 18px;
 }
 .chat-box {
     flex: 1;
@@ -32,10 +33,11 @@ body {
 }
 .message {
     margin: 10px;
-    padding: 12px;
-    border-radius: 12px;
-    max-width: 80%;
+    padding: 14px;
+    border-radius: 14px;
+    max-width: 85%;
     white-space: pre-line;
+    line-height: 1.4;
 }
 .user {
     background: #2563eb;
@@ -50,17 +52,25 @@ body {
 }
 input {
     flex: 1;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 12px;
     border: none;
 }
 button {
     margin-left: 5px;
-    padding: 10px;
-    border-radius: 10px;
+    padding: 12px;
+    border-radius: 12px;
     border: none;
     background: #9333ea;
     color: white;
+}
+.whatsapp-btn {
+    background: #25D366;
+    margin: 10px;
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -69,7 +79,12 @@ button {
 
 <div class="chat-container">
     <div class="header">Shikhar Traders AI 🤖</div>
+
     <div class="chat-box" id="chat"></div>
+
+    <div class="whatsapp-btn" onclick="sendToWhatsApp()">
+        📲 Order on WhatsApp
+    </div>
 
     <div class="input-area">
         <input id="input" placeholder="Type or speak...">
@@ -80,52 +95,96 @@ button {
 
 <script>
 
+// =====================
+// 📦 BUSINESS DATABASE
+// =====================
+
+const store = {
+    name: "Shikhar Trader’s",
+    location: "Ahiraula Bypass Road, Azamgarh",
+    phone: ["07355969446","09450805567"],
+    website: "https://shikhartradersbs.odoo.com/",
+    timing: "10 AM – 7 PM"
+};
+
+const products = {
+    cement: {
+        name: "UltraTech Cement",
+        variants: [
+            {name: "Paper Bag", price: 415},
+            {name: "Weather Plus", price: 420},
+            {name: "Super Cement", price: 415}
+        ],
+        min: 30
+    },
+    waterproof: {
+        name: "UltraTech Weather Pro",
+        variants: [
+            {size: "1L", price: 175},
+            {size: "5L", price: 750},
+            {size: "10L", price: 1450},
+            {size: "20L", price: 2550}
+        ]
+    },
+    rings: {
+        price: 12,
+        min: 1000
+    },
+    cover: {
+        price: 300,
+        perBag: 300
+    }
+};
+
+// =====================
+// 🧠 STATE MANAGEMENT
+// =====================
+
+let order = {
+    product: "",
+    quantity: "",
+    size: ""
+};
+
+// =====================
 // 🧠 LANGUAGE DETECTION
+// =====================
+
 function isHindi(msg){
     return /kya|hai|chahiye|kitna|price|batao|hai\?/i.test(msg);
 }
 
-// 💬 MAIN AI LOGIC
-function getReply(msg){
-    let m = msg.toLowerCase();
-    let hindi = isHindi(msg);
+// =====================
+// 🧠 RESPONSE BUILDER
+// =====================
 
-    // ❌ Other brands
-    if(m.includes("acc") || m.includes("ambuja") || m.includes("other")){
-        return hindi
-        ? "Nahi, hum sirf UltraTech products hi sell karte hain ✅"
-        : "We sell only UltraTech products ✅";
-    }
-
-    // 🧱 Cement
-    if(m.includes("cement")){
-        return hindi
-        ? `Bilkul! Cement available hai ✅
+function buildCementReply(hindi){
+    return hindi
+    ? `Bilkul! Cement available hai ✅
 
 • UltraTech Paper: ₹415
 • Weather Plus: ₹420
 • Super Cement: ₹415
 • Delivery: Minimum 30 bags
 
-Prices approx hain ✅ Accurate price ke liye WhatsApp karein.
+Prices approx hain ✅ WhatsApp par exact price milega.
 
 Aapko kitne bags chahiye?`
-        : `Cement is available ✅
+    : `Cement available ✅
 
 • Paper: ₹415
 • Weather Plus: ₹420
 • Super: ₹415
-• Delivery: Minimum 30 bags
+• Minimum delivery: 30 bags
 
-Prices are approx. Check WhatsApp for exact price.
+Prices are approx.
 
 How many bags do you need?`;
-    }
+}
 
-    // 💧 Waterproofing
-    if(m.includes("water") || m.includes("proof")){
-        return hindi
-        ? `Waterproofing available hai ✅
+function buildWaterReply(hindi){
+    return hindi
+    ? `Waterproofing available hai ✅
 
 • 1L: ₹175
 • 5L: ₹750
@@ -134,8 +193,8 @@ How many bags do you need?`;
 
 Stock website par depend karta hai.
 
-Kaunsa pack size chahiye?`
-        : `Waterproofing available ✅
+Kaunsa size chahiye?`
+    : `Waterproofing available ✅
 
 • 1L: ₹175
 • 5L: ₹750
@@ -145,10 +204,39 @@ Kaunsa pack size chahiye?`
 Stock depends on website.
 
 Which size do you need?`;
+}
+
+// =====================
+// 💬 MAIN AI ENGINE
+// =====================
+
+function getReply(msg){
+
+    let m = msg.toLowerCase();
+    let hindi = isHindi(msg);
+
+    // ❌ Brand restriction
+    if(m.includes("acc") || m.includes("ambuja") || m.includes("other")){
+        return hindi
+        ? "Hum sirf UltraTech products hi sell karte hain ✅"
+        : "We sell only UltraTech products ✅";
+    }
+
+    // 🧱 Cement
+    if(m.includes("cement")){
+        order.product = "Cement";
+        return buildCementReply(hindi);
+    }
+
+    // 💧 Waterproof
+    if(m.includes("water") || m.includes("proof")){
+        order.product = "Waterproofing";
+        return buildWaterReply(hindi);
     }
 
     // ⭕ Rings
     if(m.includes("ring")){
+        order.product = "Rings";
         return hindi
         ? `Rings available hain ✅
 
@@ -166,17 +254,33 @@ How many pieces do you need?`;
 
     // 🧱 Cover Blocks
     if(m.includes("cover")){
+        order.product = "Cover Blocks";
         return hindi
         ? `Cover blocks available hain ✅
 
-• ₹300 per bag (300 pcs)
+• ₹300 per bag
+• 1 bag = 300 pieces
 
 Kitne bags chahiye?`
         : `Cover blocks available ✅
 
-• ₹300 per bag (300 pcs)
+• ₹300 per bag
+• 1 bag = 300 pcs
 
 How many bags do you need?`;
+    }
+
+    // 📦 Quantity detect
+    let qty = m.match(/\d+/);
+    if(qty){
+        order.quantity = qty[0];
+        return hindi
+        ? `Perfect ✅
+
+Aap WhatsApp par order place kar sakte hain 👇`
+        : `Perfect ✅
+
+Proceed to WhatsApp order 👇`;
     }
 
     // 🚚 Delivery
@@ -184,37 +288,10 @@ How many bags do you need?`;
         return hindi
         ? `Haan delivery available hai ✅
 
-• Cement delivery: minimum 30 bags
+• Cement delivery: minimum 30 bags`
+        : `Delivery available ✅
 
-Aapka location kya hai?`
-        : `Yes delivery is available ✅
-
-• Cement delivery: minimum 30 bags
-
-What is your location?`;
-    }
-
-    // 📞 Order
-    if(m.includes("order") || m.includes("buy")){
-        return hindi
-        ? `Order call par accept nahi hota ❌
-
-WhatsApp par message karein:
-
-Hi Shikhar Trader’s,
-Mujhe UltraTech ___ chahiye
-Quantity: ___
-Location: ___
-
-Main aapko help kar dunga ✅`
-        : `Orders are not accepted on call ❌
-
-Send this on WhatsApp:
-
-Hi Shikhar Trader’s,
-I need UltraTech ___
-Quantity: ___
-Location: ___`;
+• Cement: minimum 30 bags`;
     }
 
     // 💰 Price
@@ -222,35 +299,52 @@ Location: ___`;
         return hindi
         ? `Prices approx hain ✅
 
-Accurate updated price ke liye WhatsApp par "Hi Shikhar Trader’s" bhejein ya website check karein.`
-        : `Prices are approximate ✅
+Exact price ke liye WhatsApp karein.`
+        : `Prices are approx.
 
-For exact price, contact on WhatsApp or check website.`;
+Check WhatsApp for exact rate.`;
     }
 
-    // 👋 Greeting
+    // 👋 Default
     return hindi
     ? `Namaste 🙏 Welcome to Shikhar Trader’s!
 
-Main aapki requirement ke hisaab se best UltraTech solution suggest karunga ✅
+Main aapki help karunga ✅
 
 Aapko kya chahiye?
 • Cement
 • Waterproofing
-• Cover Blocks
-• Rings`
-    : `Welcome to Shikhar Trader’s 👋
+• Rings
+• Cover Blocks`
+    : `Welcome 👋
 
-I will help you choose the best UltraTech product ✅
+How can I help you?
 
-What do you need?
 • Cement
 • Waterproofing
-• Cover Blocks
-• Rings`;
+• Rings
+• Cover Blocks`;
 }
 
-// 💬 SEND
+// =====================
+// 📲 WHATSAPP SYSTEM
+// =====================
+
+function sendToWhatsApp(){
+
+    let message = `Hi Shikhar Trader’s,
+Product: ${order.product}
+Quantity: ${order.quantity}
+Location: `;
+
+    let url = "https://wa.me/917355969446?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+}
+
+// =====================
+// 💬 CHAT SYSTEM
+// =====================
+
 function sendMessage(){
     let input = document.getElementById("input");
     let text = input.value.trim();
@@ -264,7 +358,10 @@ function sendMessage(){
     speak(reply);
 }
 
+// =====================
 // 🧾 UI
+// =====================
+
 function addMessage(text,type){
     let chat=document.getElementById("chat");
     let div=document.createElement("div");
@@ -274,18 +371,26 @@ function addMessage(text,type){
     chat.scrollTop=chat.scrollHeight;
 }
 
-// 🎤 Voice
+// =====================
+// 🎤 VOICE INPUT
+// =====================
+
 function startVoice(){
     let r=new webkitSpeechRecognition();
     r.lang="en-IN";
     r.start();
+
     r.onresult=e=>{
-        document.getElementById("input").value=e.results[0][0].transcript;
+        document.getElementById("input").value =
+        e.results[0][0].transcript;
         sendMessage();
     }
 }
 
-// 🔊 Speak
+// =====================
+// 🔊 VOICE OUTPUT
+// =====================
+
 function speak(text){
     let s=new SpeechSynthesisUtterance(text);
     s.lang="hi-IN";
