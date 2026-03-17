@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shikhar Traders AI</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: sans-serif;
+    background: linear-gradient(135deg,#0f172a,#020617);
+    color: white;
+}
+.chat-container {
+    max-width: 500px;
+    margin: auto;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.header {
+    padding: 15px;
+    background: linear-gradient(45deg,#2563eb,#9333ea);
+    text-align: center;
+    font-weight: bold;
+}
+.chat-box {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+}
+.message {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+    white-space: pre-line;
+}
+.user {
+    background: #2563eb;
+    margin-left: auto;
+}
+.bot {
+    background: #1e293b;
+}
+.input-area {
+    display: flex;
+    padding: 10px;
+}
+input {
+    flex: 1;
+    padding: 10px;
+}
+button {
+    margin-left: 5px;
+    padding: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="chat-container">
+    <div class="header">Shikhar Traders AI 🤖</div>
+    <div class="chat-box" id="chat"></div>
+
+    <div class="input-area">
+        <input id="input" placeholder="Type here...">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="startVoice()">🎤</button>
+    </div>
+</div>
+
+<script>
+let knowledge = "";
+
+// 📥 LOAD .txt FILE
+async function loadKnowledge() {
+    try {
+        const res = await fetch("Shikhartraders.txt");
+        knowledge = await res.text();
+        console.log("Knowledge loaded ✅");
+    } catch (e) {
+        console.error("Failed to load knowledge file ❌");
+    }
+}
+
+loadKnowledge();
+
+// 🧠 SMART RULE ENGINE
+function getReply(msg) {
+    msg = msg.toLowerCase();
+
+    // Language detection
+    let isHindi = /kya|hai|chahiye|price|kitna/.test(msg);
+
+    // ❌ Other brands
+    if (msg.includes("acc") || msg.includes("ambuja") || msg.includes("other")) {
+        return isHindi
+        ? "Hum sirf UltraTech products hi sell karte hain ✅"
+        : "We sell only UltraTech products ✅";
+    }
+
+    // Cement
+    if (msg.includes("cement")) {
+        return isHindi
+        ? `Cement available hai ✅
+
+• Price: ₹415 – ₹420 approx
+• Delivery: Minimum 30 bags
+
+Prices approx hain ✅ Exact price ke liye WhatsApp karein.
+
+Kitne bags chahiye?`
+        : `Cement is available ✅
+
+• Price: ₹415 – ₹420 approx
+• Delivery: Minimum 30 bags
+
+Prices are approx. Check WhatsApp for exact rate.
+
+How many bags do you need?`;
+    }
+
+    // Waterproofing
+    if (msg.includes("water") || msg.includes("proof")) {
+        return isHindi
+        ? `Waterproofing available hai ✅
+
+• 1L: ₹175
+• 5L: ₹750
+• 10L: ₹1450
+• 20L: ₹2550
+
+Stock website par depend karta hai.
+
+Kaunsa pack chahiye?`
+        : `Waterproofing available ✅
+
+• 1L: ₹175
+• 5L: ₹750
+• 10L: ₹1450
+• 20L: ₹2550
+
+Stock depends on website.
+
+Which size do you need?`;
+    }
+
+    // Rings
+    if (msg.includes("ring")) {
+        return isHindi
+        ? `Rings available hain ✅
+
+• ₹12 per piece
+• Minimum 1000 pcs
+
+Kitni quantity chahiye?`
+        : `Rings available ✅
+
+• ₹12 per piece
+• Minimum 1000 pcs
+
+How many pieces do you need?`;
+    }
+
+    // Cover blocks
+    if (msg.includes("cover")) {
+        return isHindi
+        ? `Cover blocks available hain ✅
+
+• ₹300 per bag (300 pcs)
+
+Kitne bags chahiye?`
+        : `Cover blocks available ✅
+
+• ₹300 per bag (300 pcs)
+
+How many bags do you need?`;
+    }
+
+    // Order
+    if (msg.includes("order") || msg.includes("buy")) {
+        return isHindi
+        ? `Order call par accept nahi hota ❌
+
+WhatsApp par message karein:
+
+Hi Shikhar Trader’s,
+Mujhe UltraTech ___ chahiye.
+Quantity: ___
+Location: ___`
+        : `Orders are not accepted on call ❌
+
+Please send this on WhatsApp:
+
+Hi Shikhar Trader’s,
+I need UltraTech ___
+Quantity: ___
+Location: ___`;
+    }
+
+    // Default
+    return isHindi
+    ? `Namaste 🙏
+
+Main aapki help kar sakta hoon:
+• Cement
+• Waterproofing
+• Rings
+• Cover Blocks
+
+Aapko kya chahiye?`
+    : `Welcome 👋
+
+I can help you with:
+• Cement
+• Waterproofing
+• Rings
+• Cover Blocks
+
+What do you need?`;
+}
+
+// 💬 SEND MESSAGE
+function sendMessage() {
+    let input = document.getElementById("input");
+    let text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, "user");
+    input.value = "";
+
+    let reply = getReply(text);
+    addMessage(reply, "bot");
+    speak(reply);
+}
+
+// 🧾 UI
+function addMessage(text, type) {
+    let chat = document.getElementById("chat");
+    let div = document.createElement("div");
+    div.className = "message " + type;
+    div.innerText = text;
+    chat.appendChild(div);
+    chat.scrollTop = chat.scrollHeight;
+}
+
+// 🎤 Voice
+function startVoice() {
+    let recognition = new webkitSpeechRecognition();
+    recognition.lang = "en-IN";
+    recognition.start();
+
+    recognition.onresult = function(event) {
+        document.getElementById("input").value =
+            event.results[0][0].transcript;
+        sendMessage();
+    };
+}
+
+// 🔊 Voice output
+function speak(text) {
+    let speech = new SpeechSynthesisUtterance(text);
+    speech.lang = "hi-IN";
+    speechSynthesis.speak(speech);
+}
+</script>
+
+</body>
+</html>
